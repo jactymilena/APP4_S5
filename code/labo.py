@@ -99,11 +99,32 @@ def prob3():
     zplane(num, denum)
 
 
-# def prob4():
+def prob4():
+    plt.gray()
+    img = plt.imread("images\goldhill.png")
+    plt.imshow(img)
+    plt.show()
 
+    l, c = img.shape
+    fact1 = 2
+    fact2 = 1/2
+    m = np.zeros([int(l*fact2), int(c*fact1)])
+    T = [[fact1, 0], [0, fact2]]
+
+    for x in range(c):
+        for y in range(l):
+            y_img = l- 1 - y
+            res = np.dot(T, [x, y_img])
+            c_t = int(res[0])
+            l_t = int(res[1])
+            m[l_t][c_t] = img[y_img][x]
+    
+    plt.imshow(m)
+    plt.show()       
 
 
 if __name__ == '__main__':
-    # prob1()
+    # prob1()    
     # prob2()
-    prob3()
+    # prob3()
+    prob4()
