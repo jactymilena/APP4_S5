@@ -42,8 +42,9 @@ def prob1():
     plt.plot(h)
     plt.show()
 
-
-
+    h_inv = signal.lfilter(denum, num, h)
+    plt.stem(h_inv)
+    plt.show()
 
 if __name__ == '__main__':
     prob1()
