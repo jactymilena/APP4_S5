@@ -82,13 +82,28 @@ def prob2():
     plt.show()
 
 
-    def prob3():
-        
+def prob3():
+    fe = 48000
+    wp = 2500 / (fe/2)
+    ws = 3500 / (fe/2)
+    gstop = 40
+    gpass = 0.2  
+
+    # Ordre du filtre
+    N, wn = signal.buttord(wp, ws, gpass, gstop)
+    print(N, wn)
+    num, denum = signal.butter(N, wn)
+    w, amp = signal.freqz(num, denum)
+
+    rep_freq(w, amp)
+    zplane(num, denum)
 
 
+# def prob4():
 
 
 
 if __name__ == '__main__':
     # prob1()
-    prob2()
+    # prob2()
+    prob3()
