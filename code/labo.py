@@ -7,7 +7,6 @@ from zplane import zplane
 
 
 def prob1():
-    print('allooo')
     K = 1
     z1 = 0.8j
     z2 = -0.8j
@@ -33,6 +32,7 @@ def prob1():
     plt.stem(h_inv)
     plt.show()
 
+
 def filter_h(num, denum, sg, plot=False):
     h = signal.lfilter(num, denum, sg)
     
@@ -41,6 +41,7 @@ def filter_h(num, denum, sg, plot=False):
         plt.show()
 
     return h
+
 
 def rep_freq(w, amp):
     fig, ax1 = plt.subplots()
