@@ -16,11 +16,7 @@ def prob1():
     num = np.poly([z1, z2])
     denum = np.poly([p1, p2])
 
-    zplane(num, denum)
-
-    w, amp = signal.freqz(num, denum)
-
-    rep_freq(w, amp)
+    plot_filter(num, denum)
 
     impulsion = np.zeros(500)
     impulsion[int(len(impulsion)/2)] = 1
@@ -43,7 +39,9 @@ def filter_h(num, denum, sg, plot=False):
     return h
 
 
-def rep_freq(w, amp):
+def rep_freq(num, denum):
+    w, amp = signal.freqz(num, denum)
+
     fig, ax1 = plt.subplots()
     ax1.set_title('Amplitude et phase de la réponse en fréquence')
     ax1.plot(w, 20 * np.log10(abs(amp)), 'r')
@@ -65,10 +63,7 @@ def prob2():
     num = np.poly(z)
     denum = np.poly(p)
 
-    zplane(num, denum)
-
-    w, amp = signal.freqz(num, denum)
-    rep_freq(w, amp)
+    plot_filter(num, denum)
 
     N = 500
     n = np.arange(0, N)
@@ -90,13 +85,50 @@ def prob3():
     gstop = 40
     gpass = 0.2  
 
-    # Ordre du filtre
-    N, wn = signal.buttord(wp, ws, gpass, gstop)
-    print(N, wn)
-    num, denum = signal.butter(N, wn)
-    w, amp = signal.freqz(num, denum)
+    butter_filter_conception(wp, ws, gstop, gpass)
+    cheb1_filter_conception(wp, ws, gstop, gpass)
+    cheb2_filter_conception(wp, ws, gstop, gpass)
+    ellip_filter_conception(wp, ws, gstop, gpass)
+    
 
-    rep_freq(w, amp)
+def butter_filter_conception(wp, ws, gstop, gpass):
+    N, wn = signal.buttord(wp, ws, gpass, gstop)    
+    num, denum = signal.butter(N, wn)
+
+    print_filter_order(N, wn, 'Butterworth')
+    plot_filter(num, denum)
+
+
+def cheb1_filter_conception(wp, ws, gstop, gpass):
+    N, wn = signal.cheb1ord(wp, ws, gpass, gstop)    
+    num, denum = signal.cheby1(N, gpass, wn)
+
+    print_filter_order(N, wn, 'Chebyshev type I')
+    plot_filter(num, denum)
+
+
+def cheb2_filter_conception(wp, ws, gstop, gpass):
+    N, wn = signal.cheb2ord(wp, ws, gpass, gstop)    
+    num, denum = signal.cheby2(N, gstop, wn)
+
+    print_filter_order(N, wn, 'Chebyshev type II')
+    plot_filter(num, denum)
+
+
+def ellip_filter_conception(wp, ws, gstop, gpass):
+    N, wn = signal.ellipord(wp, ws, gpass, gstop)    
+    num, denum = signal.ellip(N, gpass, gstop, wn)
+
+    print_filter_order(N, wn, 'Elliptique')
+    plot_filter(num, denum)
+
+
+def print_filter_order(N, wn, name):
+    print('{:20s} Ordre :  {:2d}     Wn : {:7.7f}'.format(name, N, wn))
+
+
+def plot_filter(num, denum):
+    rep_freq(num, denum)
     zplane(num, denum)
 
 
@@ -127,5 +159,5 @@ def prob4():
 if __name__ == '__main__':
     # prob1()    
     # prob2()
-    # prob3()
-    prob4()
+    prob3()
+    # prob4()
