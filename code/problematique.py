@@ -78,7 +78,7 @@ def rotate_img(img, plot=False):
     l = img.shape[0]
     c = img.shape[1]
     # T = rotation_matrix(l, c)
-    T = [[0, -1], [1, 0]]
+    T = [[0, 1], [-1, 0]]
     mat = np.zeros((l, c))
 
     for x in range(c):
@@ -88,6 +88,18 @@ def rotate_img(img, plot=False):
             c_t = int(res[0])
             l_t = int(res[1])
             mat[l_t][c_t] = img[y_img][x]
+    # for x in range(c):
+    #     for y in range(l):
+    #         # y_img = l - 1 - y
+    #         res = np.dot(T, [x, y])
+    #         c_t = int(res[0])
+    #         l_t = l - 1 - int(res[1])
+    #         # print(f"l - 1 - y : {l - 1 - y}")
+    #         # print(f"l_t : {l_t}")
+    #         # print(f"c_t : {c_t} int(res[1])  {int(res[1]) }")
+    #         # print(f"x : {x}")
+
+    #         mat[l_t][c_t] = img[l - 1 - y][x]
 
     if plot:
         show_img(mat, "Image avec rotation")
@@ -96,8 +108,8 @@ def rotate_img(img, plot=False):
 
 
 def filter_conception_valid(plot=False):
-    z = [ 1, 1 ]
-    p = [ -0.39 + 0.599j, -0.39 - 0.599j ]
+    z = [ -1, -1 ]
+    p = [ -0.2317 + 0.3948j, -0.2317 - 0.3948j ]
 
     return get_poles_zeros_frac(z, p, plot)
 
@@ -170,7 +182,7 @@ def main():
     show_img(img, "Image initiale")
 
     # Remove aberrations
-    num_abr, denum_abr = inv_filter()
+    num_abr, denum_abr = inv_filter(True)
     img_no_abr = filter_img(img, num_abr, denum_abr,"Image sans aberrations", True)
     # Rotate image
     img_rotated = rotate_img(img_no_abr, True)
@@ -182,7 +194,7 @@ def main():
     # Remove noise (avec python)
     num, denum =  low_pass_filter_conception(False)
     img_no_noise2 = filter_img(img_rotated, num, denum, "Image sans bruit (avec python)",True)
-   
+    
 
 if __name__ == '__main__':
     main()

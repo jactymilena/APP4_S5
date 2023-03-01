@@ -29,8 +29,8 @@ def prob1():
     plt.show()
 
 
-def filter_h(num, denum, sg, plot=False):
-    h = signal.lfilter(num, denum, sg)
+def filter_h(num, denum, signal, plot=False):
+    h = signal.lfilter(num, denum, signal)
     
     if plot:
         plt.plot(h)
