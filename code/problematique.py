@@ -60,56 +60,18 @@ def filter_img(img, num, denum, name, plot=False):
     return img_filtered
 
 
-# def rotation_matrix(l, c, plot=False):
-#     mat = np.zeros((l, c))
-
-#     for i in range(c):
-#         for j in range(l):
-#             if i == l - j - 1:
-#                 mat[i, j] = 1
-
-#     if plot:
-#         print(mat)
-
-#     return mat
-
-
 def rotate_img(img, plot=False):
     l = img.shape[0]
     c = img.shape[1]
-    fact1 = -1
-    fact2 = 1
-    # T = rotation_matrix(l, c)
-    T = [[0, fact1], [fact2, 0]]
+    T = [[0, 1], [-1, 0]]
     mat = np.zeros((l, c))
 
     for x in range(c):
         for y in range(l):
             mat_res = np.matmul(T, [x, y])
-            # print(mat_res)
             c_t = int(mat_res[0])
-            l_t = int(l) - 1 - int(mat_res[1])
+            l_t = -int(mat_res[1])
             mat[l_t][c_t] = img[l - 1 - y, x] 
-
-    # for x in range(c):
-    #     for y in range(l):
-    #         y_img = l - 1 - y
-    #         res = np.dot(T, [x, y_img])
-    #         c_t = int(res[0])
-    #         l_t = int(res[1])
-    #         mat[l_t][c_t] = img[y_img][x]
-    # for x in range(c):
-    #     for y in range(l):
-    #         # y_img = l - 1 - y
-    #         res = np.matmul(T, [x, y])
-    #         c_t = int(res[0])
-    #         l_t = l - 1 - int(res[1])
-    #         # print(f"l - 1 - y : {l - 1 - y}")
-    #         # print(f"l_t : {l_t}")
-    #         # print(f"c_t : {c_t} int(res[1])  {int(res[1]) }")
-    #         # print(f"x : {x}")
-
-    #         mat[l_t][c_t] = img[l - 1 - y][x]
 
     if plot:
         show_img(mat, "Image avec rotation")
@@ -206,7 +168,6 @@ def compress_img(img):
     # print()
 
 
-
 def main():
     plt.gray()
     filename1 = 'image_complete.npy'
@@ -223,9 +184,9 @@ def main():
     img_no_abr = filter_img(img, num_abr, denum_abr,"Image sans aberrations", True)
 
     # Rotate image
-    img_rotated = rotate_img(img_no_abr)
-    img_rotated = rotate_img(img_rotated)
-    img_rotated = rotate_img(img_rotated, True)
+    img_rotated = rotate_img(img_no_abr, True)
+    # img_rotated = rotate_img(img_rotated)
+    # img_rotated = rotate_img(img_rotated, True)
 
     # Remove noise (sans python)
     num, denum = filter_conception_valid()
@@ -236,6 +197,7 @@ def main():
     img_no_noise2 = filter_img(img_rotated, num, denum, "Image sans bruit (avec python)", False)
     
     compress_img(img_no_noise2)
+
 
 if __name__ == '__main__':
     main()
