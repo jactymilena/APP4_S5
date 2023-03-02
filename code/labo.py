@@ -146,11 +146,18 @@ def prob4():
 
     for x in range(c):
         for y in range(l):
-            y_img = l- 1 - y
-            res = np.dot(T, [x, y_img])
-            c_t = int(res[0])
-            l_t = int(res[1])
-            m[l_t][c_t] = img[y_img][x]
+            mat_res = np.matmul(T, [x, y])
+            c_t = int(mat_res[0])
+            l_t = int(l*fact2) - 1 - int(mat_res[1])
+            m[l_t][c_t] = img[l - 1 - y, x] 
+
+    # for x in range(c):
+    #     for y in range(l):
+    #         y_img = l- 1 - y
+    #         res = np.dot(T, [x, y_img])
+    #         c_t = int(res[0])
+    #         l_t = int(res[1])
+    #         m[l_t][c_t] = img[y_img][x]
     
     plt.imshow(m)
     plt.show()       
@@ -159,5 +166,5 @@ def prob4():
 if __name__ == '__main__':
     # prob1()    
     # prob2()
-    prob3()
-    # prob4()
+    # prob3()
+    prob4()

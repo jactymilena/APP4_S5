@@ -77,21 +77,31 @@ def filter_img(img, num, denum, name, plot=False):
 def rotate_img(img, plot=False):
     l = img.shape[0]
     c = img.shape[1]
+    fact1 = -1
+    fact2 = 1
     # T = rotation_matrix(l, c)
-    T = [[0, 1], [-1, 0]]
+    T = [[0, fact1], [fact2, 0]]
     mat = np.zeros((l, c))
 
     for x in range(c):
         for y in range(l):
-            y_img = l - 1 - y
-            res = np.dot(T, [x, y_img])
-            c_t = int(res[0])
-            l_t = int(res[1])
-            mat[l_t][c_t] = img[y_img][x]
+            mat_res = np.matmul(T, [x, y])
+            # print(mat_res)
+            c_t = int(mat_res[0])
+            l_t = int(l) - 1 - int(mat_res[1])
+            mat[l_t][c_t] = img[l - 1 - y, x] 
+
+    # for x in range(c):
+    #     for y in range(l):
+    #         y_img = l - 1 - y
+    #         res = np.dot(T, [x, y_img])
+    #         c_t = int(res[0])
+    #         l_t = int(res[1])
+    #         mat[l_t][c_t] = img[y_img][x]
     # for x in range(c):
     #     for y in range(l):
     #         # y_img = l - 1 - y
-    #         res = np.dot(T, [x, y])
+    #         res = np.matmul(T, [x, y])
     #         c_t = int(res[0])
     #         l_t = l - 1 - int(res[1])
     #         # print(f"l - 1 - y : {l - 1 - y}")
@@ -127,7 +137,6 @@ def low_pass_filter_conception(plot=False):
     ellip = ellip_filter_conception(wp, ws, gstop, gpass, plot)
 
     filters = sorted([ butter, cheb1, cheb2, ellip ], key=lambda x: x[0])
-
     return filters[0][1]
 
 
@@ -170,6 +179,34 @@ def rep_filter(num, denum, N, wn, name, plot=False):
     print('{:20s} Ordre :  {:2d}     Wn : {:7.7f}'.format(name, N, wn))
 
 
+def compress_img(img):
+    print('Compression')
+    mat_cov = np.cov(img)
+    e_values, e_vectors = np.linalg.eig(mat_cov)
+    compressed_img = np.matmul(e_vectors.T, img)
+
+    compressed_img_inv = np.linalg.inv(e_vectors.T)
+
+    l = compressed_img.shape[0]
+    remove_pourcentage = 0.7
+    removed_index = l - int(l*remove_pourcentage)
+    new_compressed_img = compressed_img[0:removed_index]
+
+    # print(f"compress_img len : {compressed_img.shape}")
+    # print(f"compress_img_inv len : {compressed_img_inv.shape}")
+
+    # decompressed_img = np.matmul(compressed_img, compressed_img_inv)
+
+    # show_img(img, "Image")
+    # show_img(compressed_img, "Compression")
+    # show_img(decompressed_img, "Compression")
+    # show_img(new_compressed_img, "Compression")
+    # # print(mat_cov)
+    # print(e_vectors.T)
+    # print()
+
+
+
 def main():
     plt.gray()
     filename1 = 'image_complete.npy'
@@ -179,22 +216,26 @@ def main():
     img = read_img(filename1)
     # img = read_img(filename2)
     # img = read_img(filename3, True)
-    show_img(img, "Image initiale")
+    # show_img(img, "Image initiale")
 
     # Remove aberrations
-    num_abr, denum_abr = inv_filter(True)
+    num_abr, denum_abr = inv_filter(False)
     img_no_abr = filter_img(img, num_abr, denum_abr,"Image sans aberrations", True)
+
     # Rotate image
-    img_rotated = rotate_img(img_no_abr, True)
+    img_rotated = rotate_img(img_no_abr)
+    img_rotated = rotate_img(img_rotated)
+    img_rotated = rotate_img(img_rotated, True)
 
     # Remove noise (sans python)
-    num, denum = filter_conception_valid(False)
-    img_no_noise1 = filter_img(img_rotated, num, denum, "Image sans bruit (sans python)", True)
+    num, denum = filter_conception_valid()
+    img_no_noise1 = filter_img(img_rotated, num, denum, "Image sans bruit (sans python)", False)
 
     # Remove noise (avec python)
-    num, denum =  low_pass_filter_conception(False)
-    img_no_noise2 = filter_img(img_rotated, num, denum, "Image sans bruit (avec python)",True)
+    num, denum =  low_pass_filter_conception()
+    img_no_noise2 = filter_img(img_rotated, num, denum, "Image sans bruit (avec python)", False)
     
+    compress_img(img_no_noise2)
 
 if __name__ == '__main__':
     main()
