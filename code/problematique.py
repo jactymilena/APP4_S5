@@ -83,7 +83,10 @@ def filter_conception_valid(plot=False):
     z = [ -1, -1 ]
     p = [ -0.2317 + 0.3948j, -0.2317 - 0.3948j ]
 
-    return get_poles_zeros_frac(z, p, plot)
+    num, denum = get_poles_zeros_frac(z, p, plot)
+    rep_freq(num, denum)
+
+    return num, denum
 
 
 def low_pass_filter_conception(plot=False):
@@ -141,31 +144,35 @@ def rep_filter(num, denum, N, wn, name, plot=False):
     print('{:20s} Ordre :  {:2d}     Wn : {:7.7f}'.format(name, N, wn))
 
 
-def compress_img(img):
-    print('Compression')
+def compress_img(img, plot=False):
     mat_cov = np.cov(img)
     e_values, e_vectors = np.linalg.eig(mat_cov)
-    compressed_img = np.matmul(e_vectors.T, img)
 
-    compressed_img_inv = np.linalg.inv(e_vectors.T)
+    idx = e_values.argsort()[::-1]   
+    e_values = e_values[idx]
+    e_vectors = e_vectors[:,idx]
+
+    compressed_img = np.matmul(e_vectors.T, img)
+    e_vectors_inv = np.linalg.inv(e_vectors.T)
 
     l = compressed_img.shape[0]
-    remove_pourcentage = 0.7
-    removed_index = l - int(l*remove_pourcentage)
-    new_compressed_img = compressed_img[0:removed_index]
+    c = compressed_img.shape[1]
+    remove_percentage = 0.7
+    removed_index = l - int(l*remove_percentage)
+    new_compressed_img = compressed_img[:]
 
-    # print(f"compress_img len : {compressed_img.shape}")
-    # print(f"compress_img_inv len : {compressed_img_inv.shape}")
+    for i in range(removed_index, l):
+        for j in range(c):
+            new_compressed_img[i][j] = 0
 
-    # decompressed_img = np.matmul(compressed_img, compressed_img_inv)
-
-    # show_img(img, "Image")
-    # show_img(compressed_img, "Compression")
-    # show_img(decompressed_img, "Compression")
-    # show_img(new_compressed_img, "Compression")
-    # # print(mat_cov)
-    # print(e_vectors.T)
-    # print()
+    decompressed_img = np.matmul(e_vectors_inv, compressed_img)
+    decompressed_img_70 = np.matmul(e_vectors_inv, new_compressed_img)
+    
+    if plot:
+        show_img(compressed_img, "Compression")
+        show_img(decompressed_img, "Decompression")
+        show_img(new_compressed_img, "Compression moins 70%")
+        show_img(decompressed_img_70, "Decompression moins 70%")
 
 
 def main():
@@ -185,16 +192,14 @@ def main():
 
     # Rotate image
     img_rotated = rotate_img(img_no_abr, True)
-    # img_rotated = rotate_img(img_rotated)
-    # img_rotated = rotate_img(img_rotated, True)
 
     # Remove noise (sans python)
-    num, denum = filter_conception_valid()
-    img_no_noise1 = filter_img(img_rotated, num, denum, "Image sans bruit (sans python)", False)
+    num, denum = filter_conception_valid(True)
+    img_no_noise1 = filter_img(img_rotated, num, denum, "Image sans bruit (sans python)", True)
 
     # Remove noise (avec python)
     num, denum =  low_pass_filter_conception()
-    img_no_noise2 = filter_img(img_rotated, num, denum, "Image sans bruit (avec python)", False)
+    img_no_noise2 = filter_img(img_rotated, num, denum, "Image sans bruit (avec python)", True)
     
     compress_img(img_no_noise2)
 
