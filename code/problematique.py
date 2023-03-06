@@ -74,7 +74,7 @@ def rotate_img(img, plot=False):
             mat[l_t][c_t] = img[l - 1 - y, x] 
 
     if plot:
-        show_img(mat, "Image avec rotation")
+        show_img(mat, "Image avec rotation de 90 dégres vers la droite")
 
     return mat
 
@@ -84,7 +84,9 @@ def filter_conception_valid(plot=False):
     p = [ -0.2317 + 0.3948j, -0.2317 - 0.3948j ]
 
     num, denum = get_poles_zeros_frac(z, p, plot)
-    rep_freq(num, denum)
+
+    if plot:
+        rep_freq(num,denum)
 
     return num, denum
 
@@ -99,9 +101,10 @@ def low_pass_filter_conception(plot=False):
     butter = butter_filter_conception(wp, ws, gstop, gpass, plot)
     cheb1 = cheb1_filter_conception(wp, ws, gstop, gpass, plot)
     cheb2 = cheb2_filter_conception(wp, ws, gstop, gpass, plot)
-    ellip = ellip_filter_conception(wp, ws, gstop, gpass, plot)
+    ellip = ellip_filter_conception(wp, ws, gstop, gpass, True)
 
     filters = sorted([ butter, cheb1, cheb2, ellip ], key=lambda x: x[0])
+
     return filters[0][1]
 
 
@@ -144,51 +147,54 @@ def rep_filter(num, denum, N, wn, name, plot=False):
     print('{:20s} Ordre :  {:2d}     Wn : {:7.7f}'.format(name, N, wn))
 
 
-def compress_img(img, plot=False):
+def compress_img(img, percentage, plot=False):
+    # Matrice de covariance et extraction des valeurs et des vecteurs propres
     mat_cov = np.cov(img)
     e_values, e_vectors = np.linalg.eig(mat_cov)
 
+    # Trier l'image en ordre decroissant
     idx = e_values.argsort()[::-1]   
     e_values = e_values[idx]
     e_vectors = e_vectors[:,idx]
 
+    # Compression de l'image
     compressed_img = np.matmul(e_vectors.T, img)
     e_vectors_inv = np.linalg.inv(e_vectors.T)
 
+    # Enelever une pourcentage de l'image
     l = compressed_img.shape[0]
     c = compressed_img.shape[1]
-    remove_percentage = 0.7
-    removed_index = l - int(l*remove_percentage)
-    new_compressed_img = compressed_img[:]
+    removed_index = l - int(l*percentage)
 
     for i in range(removed_index, l):
         for j in range(c):
-            new_compressed_img[i][j] = 0
+            compressed_img[i][j] = 0
 
     decompressed_img = np.matmul(e_vectors_inv, compressed_img)
-    decompressed_img_70 = np.matmul(e_vectors_inv, new_compressed_img)
     
     if plot:
-        show_img(compressed_img, "Compression")
-        show_img(decompressed_img, "Decompression")
-        show_img(new_compressed_img, "Compression moins 70%")
-        show_img(decompressed_img_70, "Decompression moins 70%")
+        fig, axis = plt.subplots(1, 3)
+
+        fig.suptitle("Compression et decompression de l'image")
+        axis[0].set_title("Image avant compression")
+        axis[0].imshow(img)
+        axis[1].set_title(f"Image avec compression de {percentage*100}%")
+        axis[1].imshow(compressed_img)
+        axis[2].set_title(f"Image décompressée")
+        axis[2].imshow(decompressed_img)
+        plt.show()
 
 
 def main():
     plt.gray()
     filename1 = 'image_complete.npy'
-    filename2 = 'goldhill_aberrations.npy'
-    filename3 = 'goldhill_rotate.png'
     
     img = read_img(filename1)
-    # img = read_img(filename2)
-    # img = read_img(filename3, True)
-    # show_img(img, "Image initiale")
+    show_img(img, "Image initiale avec les aberrations")
 
     # Remove aberrations
     num_abr, denum_abr = inv_filter(False)
-    img_no_abr = filter_img(img, num_abr, denum_abr,"Image sans aberrations", True)
+    img_no_abr = filter_img(img, num_abr, denum_abr,"Image sans les aberrations", True)
 
     # Rotate image
     img_rotated = rotate_img(img_no_abr, True)
@@ -201,8 +207,8 @@ def main():
     num, denum =  low_pass_filter_conception()
     img_no_noise2 = filter_img(img_rotated, num, denum, "Image sans bruit (avec python)", True)
     
-    compress_img(img_no_noise2)
-
+    compress_img(img_no_noise2, 0.5, True)
+    compress_img(img_no_noise2, 0.7, True)
 
 if __name__ == '__main__':
     main()
